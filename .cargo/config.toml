@@ -1,0 +1,4 @@
+[target.wasm32-unknown-emscripten]
+#linker = "emcc"
+#runner = "emrun"
+linker = "/media/alexium/Shared/Emscripten-sdk/upstream/emscripten/emcc"
