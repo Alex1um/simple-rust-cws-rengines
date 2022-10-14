@@ -6,4 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cws-rengines = {git="https://github.com/Alex1um/cws-rengines"}
+cws-rengines = {git="https://github.com/Alex1um/cws-rengines", branch="ids_rewwrite"}
+#cws-rengines = {path="../cws-rengines"}
