@@ -1,23 +1,19 @@
 use std::rc::Rc;
-use std::thread::sleep;
-use std::time::Duration;
 use cws_rengines::geometry::position::Position;
 use cws_rengines::objects::area::{Area};
 use cws_rengines::objects::game_object::{GameObject, GameObjectRef};
 use cws_rengines::renders::base::screen::Screen;
 use cws_rengines::renders::base::view::View;
 use cws_rengines::renders::sdl::render;
-use cws_rengines::renders::sdl::render::Render;
+use cws_rengines::renders::sdl::render::SDLRender;
 use std::env::*;
+use cws_rengines::events::event::Event;
+use cws_rengines::events::event_loop::EventLoop;
+use cws_rengines::renders::base::render::Render;
 
 const AREA_MAX_X: usize = 17;
 const AREA_MAX_Y: usize = 8;
 const AREA_MAX_Z: usize = 3;
-
-#[cfg(target_arch = "wasm32")]
-extern "C" {
-  fn emscripten_sleep(ms: u32);
-}
 
 fn main() {
   let resolution = (800, 600);
@@ -42,7 +38,7 @@ fn main() {
   players.push(ply);
   let view = View::new(&area, Position::new(0, 0, 0), AREA_MAX_X, AREA_MAX_Y, AREA_MAX_Z);
   let screen = Screen::new(view, resolution.0 / AREA_MAX_X, resolution.1 / AREA_MAX_Y);
-  let ( creator, mut render) = Render::new(screen, resolution.0, resolution.1).expect("render created");
+  let ( creator, mut render) = SDLRender::new(screen, resolution.0, resolution.1).expect("render created");
   let path = current_dir().expect("current dir");
   render.load_textures(&creator, vec![
     path.join("assets/tile.png").to_str().expect("123"),
@@ -51,10 +47,12 @@ fn main() {
     path.join("assets/none.png").to_str().expect("123"),
   ]);
 
+  let mut mloop = EventLoop::new(Rc::clone(&area), render);
+
   let mut dx = 1isize;
   let mut dy = 1isize;
-  loop {
-    render.render();
+  mloop.add_event_listener(Event::Loop, Box::new(move ||
+  {
     let mut new_pos = Position::new(0, 0, 0);
     {
       let Position {x: cx , y: cy, z: cz} = area.borrow().get_object_pos(ply).expect("play still in objects array");
@@ -72,11 +70,7 @@ fn main() {
       area.borrow_mut().update_object(ply, new_pos);
       // player.set_pos(new_pos).expect("Successful setpos");
     }
-    #[cfg(not(target_arch = "wasm32"))]
-    sleep(Duration::from_millis(200));
 
-    #[cfg(target_arch = "wasm32")]
-    unsafe{ emscripten_sleep(200); }
-
-  }
+    })).expect("Event listener added successfuly");
+  mloop.start();
 }
