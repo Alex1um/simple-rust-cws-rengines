@@ -5,11 +5,11 @@ use cws_rengines::objects::game_object::{GameObject, GameObjectRef};
 use cws_rengines::renders::base::screen::Screen;
 use cws_rengines::renders::base::view::View;
 use cws_rengines::renders::sdl::render;
-use cws_rengines::renders::sdl::render::SDLRender;
-use std::env::*;
+use cws_rengines::renders::sdl::render::{SDLRender};
 use cws_rengines::events::event::Event;
 use cws_rengines::events::event_loop::EventLoop;
 use cws_rengines::renders::base::render::Render;
+use std::env::*;
 
 const AREA_MAX_X: usize = 17;
 const AREA_MAX_Y: usize = 8;
@@ -38,39 +38,42 @@ fn main() {
   players.push(ply);
   let view = View::new(&area, Position::new(0, 0, 0), AREA_MAX_X, AREA_MAX_Y, AREA_MAX_Z);
   let screen = Screen::new(view, resolution.0 / AREA_MAX_X, resolution.1 / AREA_MAX_Y);
-  let ( creator, mut render) = SDLRender::new(screen, resolution.0, resolution.1).expect("render created");
+  let (creator, mut render) = SDLRender::new(screen, resolution.0, resolution.1).expect("render created");
   let path = current_dir().expect("current dir");
-  render.load_textures(&creator, vec![
-    path.join("assets/tile.png").to_str().expect("123"),
-    path.join("assets/nishal.png").to_str().expect("123"),
-    path.join("assets/player.png").to_str().expect("123"),
-    path.join("assets/none.png").to_str().expect("123"),
-  ]);
+  // render.load_textures(&creator, vec![
+  //   path.join("assets/tile.png").to_str().expect("tile texture loaded"),
+  //   path.join("assets/nishal.png").to_str().expect("nishal texture load"),
+  //   path.join("assets/player.png").to_str().expect("player texture load"),
+  //   path.join("assets/none.png").to_str().expect("none texture loads"),
+  // ]);
+  render.load_texture(&creator, path.join("assets/tile.png").to_str().expect("tile"));
+  render.load_texture(&creator, path.join("assets/nishal.png").to_str().expect("nishal"));
+  render.load_texture(&creator, path.join("assets/player.png").to_str().expect("player"));
+  render.load_texture(&creator, path.join("assets/none.png").to_str().expect("none"));
 
   let mut mloop = EventLoop::new(Rc::clone(&area), render);
 
   let mut dx = 1isize;
   let mut dy = 1isize;
   mloop.add_event_listener(Event::Loop, Box::new(move ||
-  {
-    let mut new_pos = Position::new(0, 0, 0);
     {
-      let Position {x: cx , y: cy, z: cz} = area.borrow().get_object_pos(ply).expect("play still in objects array");
-      new_pos.set(cx, cy, cz);
-      // println!("before: {} {}", cx, cy);
-      if cx == AREA_MAX_X - 1 || cx == 0 {
-        dx *= -1;
+      let mut new_pos = Position::new(0, 0, 0);
+      {
+        let Position { x: cx, y: cy, z: cz } = area.borrow().get_object_pos(ply).expect("play still in objects array");
+        new_pos.set(cx, cy, cz);
+        // println!("before: {} {}", cx, cy);
+        if cx == AREA_MAX_X - 1 || cx == 0 {
+          dx *= -1;
+        }
+        new_pos.x = ((new_pos.x as isize) + dx) as usize;
+        if cy == AREA_MAX_Y - 1 || cy == 0 {
+          dy *= -1;
+        }
+        new_pos.y = ((new_pos.y as isize) + dy) as usize;
+        // println!("after: {} {}", new_pos.x, new_pos.y);
+        area.borrow_mut().update_object(ply, new_pos);
+        // player.set_pos(new_pos).expect("Successful setpos");
       }
-      new_pos.x = ((new_pos.x as isize) + dx) as usize;
-      if cy == AREA_MAX_Y - 1 || cy == 0 {
-        dy *= -1;
-      }
-      new_pos.y = ((new_pos.y as isize) + dy) as usize;
-      // println!("after: {} {}", new_pos.x, new_pos.y);
-      area.borrow_mut().update_object(ply, new_pos);
-      // player.set_pos(new_pos).expect("Successful setpos");
-    }
-
-    })).expect("Event listener added successfuly");
+    })).expect("Event listener added successfully");
   mloop.start();
 }
