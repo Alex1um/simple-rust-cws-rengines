@@ -76,7 +76,7 @@ fn main() {
         }
         new_pos.y = ((new_pos.y as isize) + dy) as usize;
         // println!("after: {} {}", new_pos.x, new_pos.y);
-        scene.borrow_mut().update_object(ply, new_pos);
+        scene.borrow_mut().update_object(ply, new_pos).unwrap();
         // player.set_pos(new_pos).expect("Successful setpos");
       }
     })).expect("Event listener added successfully");
