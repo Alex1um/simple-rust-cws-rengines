@@ -22,8 +22,9 @@ fn main() {
   let view = View::new(Position::new(0, 0, 0), AREA_MAX_X, AREA_MAX_Y, AREA_MAX_Z);
   let screen = Screen::new(view, resolution.0 / AREA_MAX_X, resolution.1 / AREA_MAX_Y);
   let mut window = Window::new(resolution.0, resolution.1).expect("window created").create_ref();
-  let creator = Box::new(window.borrow().get_texture_creator());
-  let creator: &'static _ = Box::leak(creator);
+  // let creator = Box::new(window.borrow().get_texture_creator());
+  // let creator: &'static _ = Box::leak(creator);
+  let creator = window.borrow().get_texture_creator();
 
   let mut scene = Scene::new(area);
   let mut players: Vec<GameObjectRef> = Vec::new();
