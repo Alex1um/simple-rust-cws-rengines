@@ -42,7 +42,7 @@ fn main() {
       }
     }
   }
-  let ply = scene.borrow_mut().add_object(ply).expect("Successful adding player");
+  let mut ply = scene.borrow_mut().add_object(ply).expect("Successful adding player");
   players.push(ply);
   let path = current_dir().expect("current dir");
   // render.load_textures(&creator, vec![
