@@ -6,6 +6,8 @@ fn emscripten_sdl_flags() {
   println!("cargo:rustc-link-arg=--preload-file=./assets");
   println!("cargo:rustc-link-arg=-sUSE_SDL_IMAGE=2");
   println!("cargo:rustc-link-arg=-sASYNCIFY");
+  println!("cargo:rustc-link-arg=-sLLD_REPORT_UNDEFINED");
+  // println!("cargo:rustc-link-arg=-sERROR_ON_UNDEFINED_SYMBOLS=0");
   println!("cargo:rustc-link-arg=-sSDL2_IMAGE_FORMATS=[\"png\"]");
 }
 
