@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use cws_rengines::geometry::position::Position;
 use cws_rengines::objects::area::{Area};
@@ -6,11 +6,13 @@ use cws_rengines::objects::game_object::{GameObject, GameObjectRef};
 use cws_rengines::renders::base::screen::Screen;
 use cws_rengines::renders::base::view::View;
 use cws_rengines::renders::sdl::render;
-use cws_rengines::renders::sdl::render::{Scene, SDLRender, Window};
 use cws_rengines::events::event::Event;
 use cws_rengines::events::event_loop::EventLoop;
 use cws_rengines::renders::base::render::Render;
 use std::env::*;
+use cws_rengines::renders::sdl::render::SDLRender;
+use cws_rengines::renders::sdl::scene::Scene;
+use cws_rengines::renders::sdl::window::Window;
 
 const AREA_MAX_X: usize = 17;
 const AREA_MAX_Y: usize = 8;
@@ -61,10 +63,12 @@ fn main() {
 
   let mut dx = 1isize;
   let mut dy = 1isize;
-  mloop.add_event_listener(Event::Loop, Box::new(move ||
+  let stop_flag = Rc::<Cell<bool>>::new(Cell::new(false));
+  let mut stop_flag_sender = Rc::clone(&stop_flag);
+  mloop.add_event_listener(Event::Loop, Box::new(move |e|
     {
       let mut new_pos = Position::new(0, 0, 0);
-      {
+      if stop_flag.get() == false {
         let Position { x: cx, y: cy, z: cz } = scene.borrow().get_object_pos(ply).expect("play still in objects array");
         new_pos.set(cx, cy, cz);
         // println!("before: {} {}", cx, cy);
@@ -81,5 +85,11 @@ fn main() {
         // player.set_pos(new_pos).expect("Successful setpos");
       }
     })).expect("Event listener added successfully");
+
+  mloop.add_event_listener(Event::KeyBoard {key: 32}, Box::new(move |e| {
+    let value = stop_flag_sender.get();
+    stop_flag_sender.set(!value);
+  })).expect("Event listener added");
+
   mloop.start();
 }
